@@ -1,0 +1,3 @@
+import 'node_modules/modern-normalize/modern-normalize.css';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import './css/styles.css';
