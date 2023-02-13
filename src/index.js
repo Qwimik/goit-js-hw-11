@@ -10,6 +10,7 @@ const refs = {
   galleryEl: document.querySelector('.gallery'),
   loadMoreEl: document.querySelector('.load-more'),
   upBtnEl: document.querySelector('.btn-up'),
+  startEl: document.querySelector('.start-page'),
 };
 const apiService = new ApiService();
 let lightbox = new SimpleLightbox('.gallery a');
@@ -21,6 +22,7 @@ refs.loadMoreEl.addEventListener('click', onLoadMore);
 function onFormSubmit(e) {
   e.preventDefault();
 
+  refs.startEl.classList.add('hidden');
   refs.loadMoreEl.classList.add('hidden');
   refs.galleryEl.innerHTML = '';
 
@@ -41,8 +43,8 @@ function onFormSubmit(e) {
 
 function renderCards(hits) {
   const elements = hits
-    .map(hit => {
-      const {
+    .map(
+      ({
         webformatURL,
         largeImageURL,
         tags,
@@ -50,9 +52,8 @@ function renderCards(hits) {
         views,
         comments,
         downloads,
-      } = hit;
-
-      return `<a href="${largeImageURL}" class="gallery__item">
+      }) => {
+        return `<a href="${largeImageURL}" class="gallery__item">
     <div class="photo-card">
         <img width="340" height="226" src="${webformatURL}" alt="${tags}" loading="lazy" class="gallery__image" />
             <div class="info">
@@ -75,7 +76,8 @@ function renderCards(hits) {
             </div>
     </div>
 </a>`;
-    })
+      }
+    )
     .join('');
   refs.galleryEl.insertAdjacentHTML('beforeend', elements);
 }
