@@ -98,3 +98,22 @@ button:active {
 .hidden {
   display: none;
 }
+
+.btn-up {
+  position: absolute;
+  right: 50px;
+  bottom: 50px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #242424;
+  transition: color 250ms ease-in-out, background-color 250ms ease-in-out;
+}
+.btn-up > svg {
+  fill: currentColor;
+}
+.btn-up:hover,
+.btn-up:focus {
+  background-color: #666;
+  color: #fff;
+}

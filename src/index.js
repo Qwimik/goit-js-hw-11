@@ -1,6 +1,5 @@
 import SimpleLightbox from 'simplelightbox';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-import axios from 'axios';
 import ApiService from './js/ApiService.js';
 
 import 'simplelightbox/dist/simple-lightbox.min.css';
@@ -10,9 +9,11 @@ const refs = {
   form: document.querySelector('#search-form'),
   galleryEl: document.querySelector('.gallery'),
   loadMoreEl: document.querySelector('.load-more'),
+  upBtnEl: document.querySelector('.btn-up'),
 };
-
 const apiService = new ApiService();
+let lightbox = new SimpleLightbox('.gallery a');
+lightbox.on('show.simplelightbox');
 
 refs.form.addEventListener('submit', onFormSubmit);
 refs.loadMoreEl.addEventListener('click', onLoadMore);
@@ -20,72 +21,84 @@ refs.loadMoreEl.addEventListener('click', onLoadMore);
 function onFormSubmit(e) {
   e.preventDefault();
 
+  refs.loadMoreEl.classList.add('hidden');
   refs.galleryEl.innerHTML = '';
-  refs.loadMoreEl.classList.remove('hidden');
 
   apiService.querry = e.currentTarget.elements.searchQuery.value.trim();
   apiService.resetPage();
-  apiService.fetchPhotos().then(console.log);
+  apiService.fetchPhotos().then(hits => {
+    if (hits.length === 0) {
+      refs.loadMoreEl.classList.add('hidden');
+      return notifyFail();
+    }
+    notifySuccess();
+    renderCards(hits);
+    lightbox.refresh();
 
-  //   fetchPage = 1;
-
-  //   fetchPhotos(inputValue, fetchPage).then(photos => {
-  //     if (photos.totalHits === 0) {
-  //       return Notify.failure(
-  //         'Sorry, there are no images matching your search query. Please try again.'
-  //       );
-  //     }
-  //     Notify.success(`Hooray! We found ${photos.totalHits} images.`);
-  //     renderCards(photos);
-  //     console.log(photos);
-  //   });
-  //   onLoadMore(inputValue, fetchPage);
+    refs.loadMoreEl.classList.remove('hidden');
+  });
 }
 
-// function renderCards({ hits }) {
-//   refs.galleryEl.innerHTML = hits
-//     .map(hit => {
-//       const {
-//         webformatURL,
-//         largeImageURL,
-//         tags,
-//         likes,
-//         views,
-//         comments,
-//         downloads,
-//       } = hit;
+function renderCards(hits) {
+  const elements = hits
+    .map(hit => {
+      const {
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      } = hit;
 
-//       return `<a href="${largeImageURL}" class="gallery__item">
-//     <div class="photo-card">
-//         <img width="340" height="226" src="${webformatURL}" alt="${tags}" loading="lazy" class="gallery__image" />
-//             <div class="info">
-//                 <p class="info-item">
-//                     <b>Likes</b>
-//                     <span>${likes}</span>
-//                 </p>
-//                 <p class="info-item">
-//                     <b>Views</b>
-//                     <span>${views}</span>
-//                 </p>
-//                 <p class="info-item">
-//                     <b>Comments</b>
-//                     <span>${comments}</span>
-//                 </p>
-//                 <p class="info-item">
-//                     <b>Downloads</b>
-//                     <span>${downloads}</span>
-//                 </p>
-//             </div>
-//     </div>
-// </a>`;
-//     })
-//     .join('');
+      return `<a href="${largeImageURL}" class="gallery__item">
+    <div class="photo-card">
+        <img width="340" height="226" src="${webformatURL}" alt="${tags}" loading="lazy" class="gallery__image" />
+            <div class="info">
+                <p class="info-item">
+                    <b>Likes</b>
+                    <span>${likes}</span>
+                </p>
+                <p class="info-item">
+                    <b>Views</b>
+                    <span>${views}</span>
+                </p>
+                <p class="info-item">
+                    <b>Comments</b>
+                    <span>${comments}</span>
+                </p>
+                <p class="info-item">
+                    <b>Downloads</b>
+                    <span>${downloads}</span>
+                </p>
+            </div>
+    </div>
+</a>`;
+    })
+    .join('');
+  refs.galleryEl.insertAdjacentHTML('beforeend', elements);
+}
 
-//   let lightbox = new SimpleLightbox('.gallery a');
+function onLoadMore() {
+  apiService.fetchPhotos().then(hits => {
+    if (hits.length === 0) {
+      refs.loadMoreEl.classList.add('hidden');
+      return Notify.warning(
+        "We're sorry, but you've reached the end of search results."
+      );
+    }
 
-//   lightbox.on('show.simplelightbox');
-// }
+    renderCards(hits);
+    lightbox.refresh();
+  });
+}
 
-function onLoadMore(inputValue, fetchPage) {
-  apiService.fetchPhotos().then(console.log);
+function notifyFail() {
+  return Notify.failure(
+    `Sorry, there are no images matching your search ${apiService.querry}. Please try again.`
+  );
+}
+function notifySuccess() {
+  return Notify.success(`Hooray! We found ${apiService.totalHits} images.`);
 }
