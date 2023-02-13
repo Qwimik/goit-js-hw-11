@@ -90,7 +90,7 @@ button:active {
   transition: filter 250ms ease-in-out;
 }
 .gallery__item:hover .gallery__image {
-  filter: grayscale(0);
+  filter: grayscale(0) brightness(1.15);
 }
 
 .info {
